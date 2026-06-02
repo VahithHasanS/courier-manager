@@ -1,0 +1,267 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="h3 mb-0 text-body fw-bold">Analytics & Reports</h2>
+</div>
+
+<!-- Date Filter -->
+<div class="card border-0 shadow-sm rounded-4 mb-4">
+    <div class="card-body p-4">
+        <form method="get" class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label for="date_from" class="form-label text-muted small fw-medium">From Date</label>
+                <input type="date" name="date_from" class="form-control bg-light border-0" value="{{ date_from|date:'Y-m-d' }}">
+            </div>
+            <div class="col-md-4">
+                <label for="date_to" class="form-label text-muted small fw-medium">To Date</label>
+                <input type="date" name="date_to" class="form-control bg-light border-0" value="{{ date_to|date:'Y-m-d' }}">
+            </div>
+            <div class="col-md-4">
+                <button type="submit" class="btn btn-primary w-100 shadow-sm fw-bold"><i class="fas fa-filter me-2"></i>Apply Filter</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Summary Cards -->
+<div class="row g-4 mb-4">
+    <div class="col-md-6 col-xl-3">
+        <div class="card border-0 shadow-sm rounded-4 h-100 bg-primary text-white overflow-hidden position-relative">
+            <div class="position-absolute top-0 end-0 p-4 opacity-25">
+                <i class="fas fa-box-open fa-4x"></i>
+            </div>
+            <div class="card-body p-4 position-relative z-1">
+                <h6 class="fw-medium mb-1 text-white-50 text-uppercase tracking-wide">Total Bookings</h6>
+                <h2 class="display-5 fw-bold mb-0">{{ total_bookings }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-xl-3">
+        <div class="card border-0 shadow-sm rounded-4 h-100 bg-success text-white overflow-hidden position-relative">
+            <div class="position-absolute top-0 end-0 p-4 opacity-25">
+                <i class="fas fa-rupee-sign fa-4x"></i>
+            </div>
+            <div class="card-body p-4 position-relative z-1">
+                <h6 class="fw-medium mb-1 text-white-50 text-uppercase tracking-wide">Total Revenue</h6>
+                <h2 class="display-5 fw-bold mb-0">₹{{ total_revenue }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-xl-3">
+        <div class="card border-0 shadow-sm rounded-4 h-100 bg-danger text-white overflow-hidden position-relative">
+            <div class="position-absolute top-0 end-0 p-4 opacity-25">
+                <i class="fas fa-file-invoice-dollar fa-4x"></i>
+            </div>
+            <div class="card-body p-4 position-relative z-1">
+                <h6 class="fw-medium mb-1 text-white-50 text-uppercase tracking-wide">Total Expenses</h6>
+                <h2 class="display-5 fw-bold mb-0">₹{{ total_expenses }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-xl-3">
+        <div class="card border-0 shadow-sm rounded-4 h-100 {% if profit >= 0 %}bg-info{% else %}bg-warning{% endif %} text-white overflow-hidden position-relative">
+            <div class="position-absolute top-0 end-0 p-4 opacity-25">
+                <i class="fas fa-chart-line fa-4x"></i>
+            </div>
+            <div class="card-body p-4 position-relative z-1">
+                <h6 class="fw-medium mb-1 text-white-50 text-uppercase tracking-wide">Net Profit</h6>
+                <h2 class="display-5 fw-bold mb-0">₹{{ profit }}</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row 1 -->
+<div class="row g-4 mb-4">
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="card-header bg-transparent border-bottom pt-4 pb-3">
+                <h5 class="fw-bold mb-0">Daily Bookings Overview</h5>
+            </div>
+            <div class="card-body p-4">
+                <canvas id="dailyChart" height="100"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="card-header bg-transparent border-bottom pt-4 pb-3">
+                <h5 class="fw-bold mb-0">Delivery Status Breakdown</h5>
+            </div>
+            <div class="card-body p-4 d-flex justify-content-center align-items-center">
+                <div style="width: 100%; max-width: 300px;">
+                    <canvas id="statusChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row 2 & Customers -->
+<div class="row g-4 mb-4">
+    <!-- Top Customers -->
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="card-header bg-transparent border-bottom pt-4 pb-3">
+                <h5 class="fw-bold mb-0">Top Customers (by Revenue)</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush rounded-bottom-4">
+                    {% for name, rev in top_revenue_customers %}
+                    <div class="list-group-item d-flex justify-content-between align-items-center p-4">
+                        <div class="d-flex align-items-center">
+                            <div class="bg-success bg-opacity-10 text-success rounded-circle d-flex justify-content-center align-items-center me-3" style="width: 40px; height: 40px;">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <span class="fw-medium text-body">{{ name }}</span>
+                        </div>
+                        <span class="badge bg-success rounded-pill px-3 py-2 fs-6 shadow-sm">₹{{ rev }}</span>
+                    </div>
+                    {% empty %}
+                    <div class="p-4 text-center text-muted">
+                        <p class="mb-0">No bookings in range.</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="card-header bg-transparent border-bottom pt-4 pb-3">
+                <h5 class="fw-bold mb-0">Cash vs Credit</h5>
+            </div>
+            <div class="card-body p-4 d-flex justify-content-center align-items-center">
+                <div style="width: 100%; max-width: 250px;">
+                    <canvas id="accountChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="card-header bg-transparent border-bottom pt-4 pb-3">
+                <h5 class="fw-bold mb-0">Payment Mode</h5>
+            </div>
+            <div class="card-body p-4 d-flex justify-content-center align-items-center">
+                <div style="width: 100%; max-width: 250px;">
+                    <canvas id="amountTypeChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Common Chart Options for a modern look
+    Chart.defaults.font.family = "'Inter', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif";
+    Chart.defaults.color = '#6c757d';
+    
+    // Status Doughnut Chart
+    const statusCtx = document.getElementById('statusChart').getContext('2d');
+    new Chart(statusCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Pending', 'In Transit', 'Delivered', 'Issue'],
+            datasets: [{
+                data: [{{ status_counts.pending|default:0 }}, {{ status_counts.in_transit|default:0 }}, {{ status_counts.delivered|default:0 }}, {{ status_counts.issue|default:0 }}],
+                backgroundColor: ['#ffc107', '#0dcaf0', '#198754', '#dc3545'],
+                borderWidth: 0,
+                hoverOffset: 4
+            }]
+        },
+        options: { 
+            responsive: true,
+            cutout: '70%',
+            plugins: {
+                legend: { position: 'bottom', labels: { usePointStyle: true, padding: 20 } }
+            }
+        }
+    });
+
+    // Account Type Doughnut Chart
+    const accountCtx = document.getElementById('accountChart').getContext('2d');
+    new Chart(accountCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Cash', 'Credit'],
+            datasets: [{
+                data: [{{ cash_count|default:0 }}, {{ credit_count|default:0 }}],
+                backgroundColor: ['#198754', '#ffc107'],
+                borderWidth: 0,
+                hoverOffset: 4
+            }]
+        },
+        options: { 
+            responsive: true,
+            cutout: '70%',
+            plugins: {
+                legend: { position: 'bottom', labels: { usePointStyle: true, padding: 20 } }
+            }
+        }
+    });
+
+    // Daily Bookings Bar Chart
+    const dailyCtx = document.getElementById('dailyChart').getContext('2d');
+    new Chart(dailyCtx, {
+        type: 'line', // Switched to line for better time-series visualization
+        data: {
+            labels: {{ day_labels|safe }}, // Fixed JSON.parse error
+            datasets: [{
+                label: 'Bookings',
+                data: {{ day_counts|safe }}, // Fixed JSON.parse error
+                borderColor: '#0d6efd',
+                backgroundColor: 'rgba(13, 110, 253, 0.1)',
+                borderWidth: 3,
+                pointBackgroundColor: '#0d6efd',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
+                pointRadius: 4,
+                pointHoverRadius: 6,
+                fill: true,
+                tension: 0.4 // Smooth curves
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { 
+                    beginAtZero: true, 
+                    ticks: { stepSize: 1 },
+                    grid: { borderDash: [5, 5], color: '#e9ecef' },
+                    border: { display: false }
+                },
+                x: {
+                    grid: { display: false },
+                    border: { display: false }
+                }
+            }
+        }
+    });
+
+    // Amount Type Pie Chart
+    const atCtx = document.getElementById('amountTypeChart').getContext('2d');
+    new Chart(atCtx, {
+        type: 'doughnut',
+        data: {
+            labels: {{ amount_type_labels|safe }}, // Fixed JSON.parse error
+            datasets: [{
+                data: {{ amount_type_data|safe }}, // Fixed JSON.parse error
+                backgroundColor: ['#0d6efd', '#6c757d', '#198754', '#fd7e14', '#e83e8c', '#0dcaf0'],
+                borderWidth: 0,
+                hoverOffset: 4
+            }]
+        },
+        options: { 
+            responsive: true,
+            cutout: '70%',
+            plugins: {
+                legend: { position: 'bottom', labels: { usePointStyle: true, padding: 20 } }
+            }
+        }
+    });
+</script>
+{% endblock %}

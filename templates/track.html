@@ -1,0 +1,154 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-12 col-lg-8">
+        <div class="text-center mb-5 mt-4">
+            <h1 class="display-5 fw-bold text-body mb-3">Track Your Package</h1>
+            <p class="lead text-muted">Enter your tracking number below to see real-time updates.</p>
+        </div>
+
+        <div class="card border-0 shadow-lg rounded-4 mb-5 overflow-hidden">
+            <div class="card-body p-1">
+                <form method="get" action="{% url 'track_package' %}" class="d-flex align-items-center bg-body-tertiary p-2 rounded-4">
+                    <div class="input-group input-group-lg border-0 bg-transparent">
+                        <span class="input-group-text bg-transparent border-0 text-primary fs-4 px-4"><i class="fas fa-search"></i></span>
+                        <input type="text" name="tracking_id" class="form-control border-0 bg-transparent shadow-none fs-5" placeholder="e.g., A1B2C3D4E5" value="{{ tracking_id }}" required autofocus>
+                        <button class="btn btn-primary rounded-pill px-5 fw-bold" type="submit">Track</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        {% if searched %}
+            {% if booking %}
+                <div class="card border-0 shadow-sm rounded-4 mb-4">
+                    <div class="card-header bg-transparent border-bottom pt-4 pb-3 d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0 fw-bold">Package Details</h4>
+                        <span class="badge 
+                            {% if booking.status == 'delivered' %}bg-success
+                            {% elif booking.status == 'issue' %}bg-danger
+                            {% else %}bg-warning text-dark{% endif %} fs-6 px-3 py-2 rounded-pill">
+                            {{ booking.status|title }}
+                        </span>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="row g-4 mb-4">
+                            <div class="col-sm-6 col-md-3">
+                                <span class="text-muted small fw-bold text-uppercase d-block mb-1">Tracking ID</span>
+                                <span class="fs-5 fw-medium text-primary">{{ booking.tracking_id }}</span>
+                            </div>
+                            <div class="col-sm-6 col-md-3">
+                                <span class="text-muted small fw-bold text-uppercase d-block mb-1">Date Booked</span>
+                                <span class="fs-5 fw-medium">{{ booking.date }}</span>
+                            </div>
+                            <div class="col-sm-6 col-md-3">
+                                <span class="text-muted small fw-bold text-uppercase d-block mb-1">Weight</span>
+                                <span class="fs-5 fw-medium">{{ booking.weight }} kg</span>
+                            </div>
+                            <div class="col-sm-6 col-md-3">
+                                <span class="text-muted small fw-bold text-uppercase d-block mb-1">Pieces</span>
+                                <span class="fs-5 fw-medium">{{ booking.pieces }}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="row g-4 bg-light rounded-4 p-3 m-0">
+                            <div class="col-md-6 border-end-md">
+                                <div class="d-flex align-items-start">
+                                    <div class="text-danger me-3 fs-3"><i class="fas fa-map-marker-alt"></i></div>
+                                    <div>
+                                        <h6 class="fw-bold mb-1">From</h6>
+                                        <p class="mb-0 text-muted">{{ booking.from_address.city }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-start">
+                                    <div class="text-success me-3 fs-3"><i class="fas fa-map-marker-alt"></i></div>
+                                    <div>
+                                        <h6 class="fw-bold mb-1">To</h6>
+                                        <p class="mb-0 text-muted">{{ booking.to_address.city }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card border-0 shadow-sm rounded-4">
+                    <div class="card-header bg-transparent border-bottom pt-4 pb-3">
+                        <h4 class="mb-0 fw-bold">Tracking History</h4>
+                    </div>
+                    <div class="card-body p-4 p-md-5">
+                        <div class="tracking-timeline">
+                            {% for event in history %}
+                            <div class="timeline-item position-relative pb-4 ps-4 border-start border-2 {% if forloop.first %}border-primary{% else %}border-secondary border-opacity-25{% endif %}">
+                                <!-- Marker -->
+                                <div class="timeline-marker position-absolute rounded-circle shadow-sm 
+                                    {% if event.status == 'delivered' %}bg-success
+                                    {% elif event.status == 'issue' %}bg-danger
+                                    {% elif forloop.first %}bg-primary
+                                    {% else %}bg-secondary{% endif %}" 
+                                    style="width: 16px; height: 16px; left: -9px; top: 0; border: 3px solid var(--card-bg);">
+                                </div>
+                                
+                                <div class="d-flex flex-column flex-sm-row justify-content-between mb-2">
+                                    <h5 class="fw-bold mb-1 {% if forloop.first %}text-primary{% endif %}">{{ event.status|title }}</h5>
+                                    <span class="text-muted small fw-medium"><i class="far fa-clock me-1"></i>{{ event.timestamp|date:"M d, Y h:i A" }}</span>
+                                </div>
+                                
+                                {% if event.remark %}
+                                <div class="bg-light p-3 rounded-3 mt-2">
+                                    <p class="mb-0 text-muted small"><i class="fas fa-info-circle me-2"></i>{{ event.remark }}</p>
+                                </div>
+                                {% endif %}
+                                
+                                <p class="text-muted small mt-2 mb-0">Updated by: {{ event.updated_by }}</p>
+                            </div>
+                            {% empty %}
+                            <div class="text-center py-4">
+                                <div class="text-muted mb-3"><i class="fas fa-history fs-1 opacity-50"></i></div>
+                                <h5>No history available yet.</h5>
+                                <p class="text-muted small">Tracking details will appear here once the package status is updated.</p>
+                            </div>
+                            {% endfor %}
+                            
+                            <!-- End of line marker to cap the border -->
+                            {% if history %}
+                            <div class="timeline-item position-relative ps-4">
+                                <div class="timeline-marker position-absolute rounded-circle bg-secondary bg-opacity-25" style="width: 12px; height: 12px; left: -7px; top: -5px; border: 2px solid var(--card-bg);"></div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+            {% else %}
+                <div class="text-center py-5">
+                    <div class="text-danger mb-4"><i class="fas fa-box-open" style="font-size: 5rem; opacity: 0.5;"></i></div>
+                    <h3 class="fw-bold">Package Not Found</h3>
+                    <p class="text-muted">We couldn't find any package with tracking ID <strong>"{{ tracking_id }}"</strong>.</p>
+                    <p class="text-muted small">Please check the number and try again.</p>
+                </div>
+            {% endif %}
+        {% endif %}
+    </div>
+</div>
+
+<style>
+    /* Add a little padding adjustment for mobile timeline */
+    @media (max-width: 575.98px) {
+        .border-end-md {
+            border-right: none !important;
+            border-bottom: 1px solid var(--bs-border-color);
+            padding-bottom: 1rem;
+            margin-bottom: 1rem;
+        }
+    }
+    @media (min-width: 576px) {
+        .border-end-md {
+            border-right: 1px solid var(--bs-border-color);
+        }
+    }
+</style>
+{% endblock %}

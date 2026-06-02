@@ -1,0 +1,280 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Courier Manager Pro</title>
+
+    <!-- Bootstrap 5.3 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Initial Theme Script to prevent FOUC -->
+    <script>
+        const storedTheme = localStorage.getItem('theme') || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+        if (storedTheme) {
+            document.documentElement.setAttribute('data-bs-theme', storedTheme);
+        }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg fixed-top">
+        <div class="container-fluid px-3">
+            <!-- Sidebar Toggler (Mobile) -->
+            <button class="btn btn-sm btn-outline-secondary d-lg-none me-2" type="button" data-bs-toggle="offcanvas"
+                data-bs-target="#sidebarOffcanvas">
+                <i class="fas fa-bars"></i>
+            </button>
+
+            <a class="navbar-brand" href="{% url 'home' %}">
+                <i class="fas fa-box-fast me-2 text-primary"></i>Courier<span class="text-body">Pro</span>
+            </a>
+
+            <div class="d-flex align-items-center ms-auto">
+                <div class="theme-switch-wrapper me-3">
+                    <i class="fas fa-sun text-warning me-1" style="font-size: 0.9rem;"></i>
+                    <label class="theme-switch" for="checkbox">
+                        <input type="checkbox" id="checkbox" />
+                        <div class="slider round"></div>
+                    </label>
+                    <i class="fas fa-moon text-secondary ms-1" style="font-size: 0.9rem;"></i>
+                </div>
+
+                {% if user.is_authenticated %}
+                <div class="dropdown">
+                    <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle text-body"
+                        id="dropdownUser" data-bs-toggle="dropdown" aria-expanded="false">
+                        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2"
+                            style="width: 32px; height: 32px; font-weight: 600;">
+                            {{ user.username|make_list|first|upper }}
+                        </div>
+                        <span class="d-none d-md-block fw-semibold">{{ user.username }}</span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2" aria-labelledby="dropdownUser">
+                        <li><a class="dropdown-item py-2" href="{% url 'profile' %}"><i
+                                    class="fas fa-user fa-sm me-2 text-muted"></i>Profile</a></li>
+                        <li><a class="dropdown-item py-2" href="{% url 'backup' %}"><i
+                                    class="fas fa-download fa-sm me-2 text-muted"></i>Backup Data</a></li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li><a class="dropdown-item py-2 text-danger" href="{% url 'logout' %}"><i
+                                    class="fas fa-sign-out-alt fa-sm me-2"></i>Sign out</a></li>
+                    </ul>
+                </div>
+                {% else %}
+                <a href="{% url 'login' %}" class="btn btn-primary btn-sm px-3 rounded-pill">Sign In</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    {% if user.is_authenticated %}
+    <!-- Desktop Sidebar (hidden on mobile, uses offcanvas on mobile) -->
+    <div class="sidebar d-none d-lg-block" id="desktopSidebar">
+        <ul class="nav flex-column mb-auto">
+            <li class="nav-item">
+                <a href="{% url 'dashboard' %}"
+                    class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                    <i class="fas fa-chart-pie"></i> Dashboard
+                </a>
+            </li>
+
+            <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-4 mt-4 mb-2 text-muted text-uppercase"
+                style="font-size: 0.75rem; font-weight: 700; letter-spacing: 0.5px;">
+                <span>Bookings</span>
+            </h6>
+            <li class="nav-item">
+                <a href="{% url 'add_booking' %}"
+                    class="nav-link {% if request.resolver_match.url_name == 'add_booking' %}active{% endif %}">
+                    <i class="fas fa-plus-circle"></i> Add Booking
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'booking_list' %}"
+                    class="nav-link {% if request.resolver_match.url_name == 'booking_list' %}active{% endif %}">
+                    <i class="fas fa-list"></i> Booking List
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'search' %}"
+                    class="nav-link {% if request.resolver_match.url_name == 'search' %}active{% endif %}">
+                    <i class="fas fa-search"></i> Search / Filter
+                </a>
+            </li>
+
+            <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-4 mt-4 mb-2 text-muted text-uppercase"
+                style="font-size: 0.75rem; font-weight: 700; letter-spacing: 0.5px;">
+                <span>Finance & Reports</span>
+            </h6>
+            <li class="nav-item">
+                <a class="nav-link" href="#invoiceSubmenu" data-bs-toggle="collapse" role="button"
+                    aria-expanded="false">
+                    <i class="fas fa-file-invoice-dollar"></i> Invoices
+                    <i class="fas fa-chevron-down ms-auto" style="font-size: 0.7rem;"></i>
+                </a>
+                <div class="collapse {% if 'invoice' in request.resolver_match.url_name %}show{% endif %}"
+                    id="invoiceSubmenu">
+                    <ul class="nav flex-column ps-3">
+                        <li><a class="nav-link py-1" href="{% url 'create_invoice' %}">Create Invoice</a></li>
+                        <li><a class="nav-link py-1" href="{% url 'invoice_list' %}">Invoice List</a></li>
+                    </ul>
+                </div>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#expenseSubmenu" data-bs-toggle="collapse" role="button"
+                    aria-expanded="false">
+                    <i class="fas fa-money-bill-wave"></i> Expenses
+                    <i class="fas fa-chevron-down ms-auto" style="font-size: 0.7rem;"></i>
+                </a>
+                <div class="collapse {% if 'expense' in request.resolver_match.url_name %}show{% endif %}"
+                    id="expenseSubmenu">
+                    <ul class="nav flex-column ps-3">
+                        <li><a class="nav-link py-1" href="{% url 'add_expense' %}">Add Expense</a></li>
+                        <li><a class="nav-link py-1" href="{% url 'expense_list' %}">Expense List</a></li>
+                    </ul>
+                </div>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#hoReportSubmenu" data-bs-toggle="collapse" role="button"
+                    aria-expanded="false">
+                    <i class="fas fa-building"></i> HO Reports
+                    <i class="fas fa-chevron-down ms-auto" style="font-size: 0.7rem;"></i>
+                </a>
+                <div class="collapse {% if 'ho_report' in request.resolver_match.url_name %}show{% endif %}"
+                    id="hoReportSubmenu">
+                    <ul class="nav flex-column ps-3">
+                        <li><a class="nav-link py-1" href="{% url 'add_ho_report' %}">Add Report</a></li>
+                        <li><a class="nav-link py-1" href="{% url 'ho_report_list' %}">View Reports</a></li>
+                    </ul>
+                </div>
+            </li>
+
+            <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-4 mt-4 mb-2 text-muted text-uppercase"
+                style="font-size: 0.75rem; font-weight: 700; letter-spacing: 0.5px;">
+                <span>Data Management</span>
+            </h6>
+            <li class="nav-item dropdown px-3">
+                <a class="nav-link dropdown-toggle" href="#" id="exportDropdown" role="button"
+                    data-bs-toggle="dropdown">
+                    <i class="fas fa-file-export"></i> Export Data
+                </a>
+                <ul class="dropdown-menu shadow border-0 w-100">
+                    <li><a class="dropdown-item" href="{% url 'export_excel' 'booking' %}">Bookings</a></li>
+                    <li><a class="dropdown-item" href="{% url 'export_excel' 'horeport' %}">HO Reports</a></li>
+                    <li><a class="dropdown-item" href="{% url 'export_excel' 'invoice' %}">Invoices</a></li>
+                </ul>
+            </li>
+            <li class="nav-item dropdown px-3">
+                <a class="nav-link dropdown-toggle" href="#" id="importDropdown" role="button"
+                    data-bs-toggle="dropdown">
+                    <i class="fas fa-file-import"></i> Import Data
+                </a>
+                <ul class="dropdown-menu shadow border-0 w-100">
+                    <li><a class="dropdown-item" href="{% url 'import_excel' 'booking' %}">Bookings</a></li>
+                    <li><a class="dropdown-item" href="{% url 'import_excel' 'horeport' %}">HO Reports</a></li>
+                </ul>
+            </li>
+
+            <li class="nav-item"><a class="nav-link" href="{% url 'analytics' %}">Analytics</a></li>
+        </ul>
+    </div>
+
+    <!-- Mobile Sidebar Offcanvas -->
+    <div class="offcanvas offcanvas-start" tabindex="-1" id="sidebarOffcanvas" aria-labelledby="sidebarOffcanvasLabel">
+        <div class="offcanvas-header border-bottom">
+            <h5 class="offcanvas-title" id="sidebarOffcanvasLabel">Menu</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body p-0">
+            <!-- (Mobile menu clone of desktop sidebar could go here, or just let Bootstrap's offcanvas classes handle the same block if structured slightly differently. For simplicity, we just copy the inner nav) -->
+            <ul class="nav flex-column mb-auto py-3">
+                <!-- Re-using links for mobile -->
+                <li class="nav-item"><a href="{% url 'dashboard' %}" class="nav-link text-body px-4 py-2"><i
+                            class="fas fa-chart-pie me-2 text-primary"></i> Dashboard</a></li>
+                <li class="nav-item"><a href="{% url 'add_booking' %}" class="nav-link text-body px-4 py-2"><i
+                            class="fas fa-plus-circle me-2 text-primary"></i> Add Booking</a></li>
+                <li class="nav-item"><a href="{% url 'booking_list' %}" class="nav-link text-body px-4 py-2"><i
+                            class="fas fa-list me-2 text-primary"></i> Booking List</a></li>
+                <li class="nav-item"><a href="{% url 'search' %}" class="nav-link text-body px-4 py-2"><i
+                            class="fas fa-search me-2 text-primary"></i> Search</a></li>
+                <!-- We keep it short for mobile simplicity in this demo, they can access everything from desktop -->
+            </ul>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Main content -->
+    <main class="{% if user.is_authenticated %}main-content{% else %}pt-5 mt-5{% endif %}">
+        <div class="container-fluid">
+            <!-- Toast Notifications Container -->
+            <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1080; margin-top: 60px;">
+                {% if messages %}
+                {% for message in messages %}
+                <div class="toast align-items-center text-white bg-{% if message.tags == 'error' %}danger{% elif message.tags == 'success' %}success{% else %}primary{% endif %} border-0 show"
+                    role="alert" aria-live="assertive" aria-atomic="true">
+                    <div class="d-flex">
+                        <div class="toast-body fw-medium">
+                            {% if message.tags == 'success' %}<i class="fas fa-check-circle me-2"></i>{% endif %}
+                            {% if message.tags == 'error' %}<i class="fas fa-exclamation-circle me-2"></i>{% endif %}
+                            {{ message }}
+                        </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
+                            aria-label="Close"></button>
+                    </div>
+                </div>
+                {% endfor %}
+                {% endif %}
+            </div>
+
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+
+    <!-- Bootstrap Bundle JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Theme Toggle Logic -->
+    <script>
+        const toggleSwitch = document.querySelector('.theme-switch input[type="checkbox"]');
+
+        // Initialize switch based on current theme
+        if (document.documentElement.getAttribute('data-bs-theme') === 'dark') {
+            toggleSwitch.checked = true;
+        }
+
+        function switchTheme(e) {
+            if (e.target.checked) {
+                document.documentElement.setAttribute('data-bs-theme', 'dark');
+                localStorage.setItem('theme', 'dark');
+            } else {
+                document.documentElement.setAttribute('data-bs-theme', 'light');
+                localStorage.setItem('theme', 'light');
+            }
+        }
+
+        toggleSwitch.addEventListener('change', switchTheme, false);
+
+        // Auto-hide toasts after 5 seconds
+        document.addEventListener('DOMContentLoaded', () => {
+            const toasts = document.querySelectorAll('.toast.show');
+            toasts.forEach(t => {
+                setTimeout(() => {
+                    const bsToast = new bootstrap.Toast(t);
+                    bsToast.hide();
+                }, 5000);
+            });
+        });
+    </script>
+</body>
+
+</html>

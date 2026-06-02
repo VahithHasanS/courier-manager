@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% block content %}
+<div class="d-flex align-items-center justify-content-center" style="min-height: calc(100vh - 150px);">
+    <div class="col-12 col-md-8 col-lg-5 col-xl-4">
+        <div class="card border-0 shadow-lg" style="border-radius: 1rem;">
+            <div class="card-body p-5">
+                <div class="text-center mb-5">
+                    <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3 shadow-sm" style="width: 60px; height: 60px; font-size: 1.5rem;">
+                        <i class="fas fa-box-fast"></i>
+                    </div>
+                    <h3 class="fw-bold mb-1">Welcome Back</h3>
+                    <p class="text-muted small">Sign in to your CourierPro account</p>
+                </div>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="username" class="form-label fw-medium small">Username</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-transparent text-muted"><i class="fas fa-user"></i></span>
+                            <input type="text" name="username" class="form-control border-start-0 ps-0" required autofocus>
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <label for="password" class="form-label fw-medium small">Password</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-transparent text-muted"><i class="fas fa-lock"></i></span>
+                            <input type="password" name="password" class="form-control border-start-0 ps-0" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100 rounded-pill py-2 shadow-sm fw-bold">Sign In</button>
+                </form>
+                
+                <div class="d-flex align-items-center my-4">
+                    <hr class="flex-grow-1">
+                    <span class="mx-3 text-muted small text-uppercase fw-semibold">Or</span>
+                    <hr class="flex-grow-1">
+                </div>
+                
+                <div class="d-grid gap-2">
+                    <a href="{% url 'account_login' %}" class="btn btn-outline-danger rounded-pill py-2 fw-medium">
+                        <i class="fab fa-google me-2"></i>Continue with Google
+                    </a>
+                    <div class="text-center mt-3">
+                        <span class="text-muted small">Don't have an account? </span>
+                        <a href="{% url 'account_signup' %}" class="text-decoration-none fw-bold text-primary">Sign up</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-12 col-xl-10">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="h3 mb-0 text-body fw-bold">Create Invoice</h2>
+            <a href="{% url 'invoice_list' %}" class="btn btn-outline-secondary rounded-pill px-4">
+                <i class="fas fa-arrow-left me-2"></i>Back to List
+            </a>
+        </div>
+        
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4 p-md-5">
+                <form method="post" id="invoiceForm">
+                    {% csrf_token %}
+                    
+                    <div class="row g-4 mb-4 pb-4 border-bottom">
+                        <div class="col-md-4">
+                            <label for="customer" class="form-label fw-medium small">Customer</label>
+                            <select name="customer" id="customer" class="form-select" required>
+                                <option value="">Select Customer</option>
+                                {% for c in customers %}
+                                <option value="{{ c }}">{{ c }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="date_from" class="form-label fw-medium small">From Date</label>
+                            <input type="date" name="date_from" id="date_from" class="form-control" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="date_to" class="form-label fw-medium small">To Date</label>
+                            <input type="date" name="date_to" id="date_to" class="form-control" required>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4" id="bookings-section">
+                        <div class="d-flex justify-content-between align-items-end mb-3">
+                            <label class="form-label fw-bold mb-0"><i class="fas fa-list-check me-2 text-primary"></i>Select Bookings to Include</label>
+                            <span class="badge bg-secondary" id="bookingCount">0 selected</span>
+                        </div>
+                        
+                        <div id="bookings-checkboxes" class="border rounded p-4 bg-light" style="max-height: 300px; overflow-y: auto;">
+                            <div class="text-center text-muted py-4">
+                                <i class="far fa-calendar-alt fs-2 mb-2 opacity-50"></i>
+                                <p class="mb-0 small">Select a customer and date range above to load available bookings.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-end mt-5">
+                        <button type="submit" class="btn btn-primary rounded-pill px-5 shadow-sm fw-bold btn-lg">
+                            <i class="fas fa-file-invoice-dollar me-2"></i>Generate Invoice
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const customerSelect = document.getElementById('customer');
+    const dateFromInput = document.getElementById('date_from');
+    const dateToInput = document.getElementById('date_to');
+    
+    [customerSelect, dateFromInput, dateToInput].forEach(el => {
+        el.addEventListener('change', loadBookings);
+    });
+
+    function loadBookings() {
+        const customer = customerSelect.value;
+        const dateFrom = dateFromInput.value;
+        const dateTo = dateToInput.value;
+        
+        if (!customer || !dateFrom || !dateTo) return;
+        
+        document.getElementById('bookings-checkboxes').innerHTML = '<div class="text-center py-4"><div class="spinner-border text-primary" role="status"></div><p class="text-muted mt-2 small">Loading bookings...</p></div>';
+        
+        const url = `/api/bookings/?customer=${encodeURIComponent(customer)}&date_from=${dateFrom}&date_to=${dateTo}`;
+        
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                let html = '';
+                if(data.length > 0) {
+                    data.forEach(b => {
+                        html += `
+                        <div class="form-check custom-checkbox mb-3 p-3 bg-white border rounded shadow-sm">
+                            <input class="form-check-input ms-1 me-3 mt-1" type="checkbox" name="bookings" value="${b.id}" id="booking${b.id}" checked onchange="updateCount()">
+                            <label class="form-check-label d-flex justify-content-between align-items-center w-100" for="booking${b.id}">
+                                <div>
+                                    <span class="fw-bold text-primary">${b.tracking_id}</span>
+                                    <span class="text-muted small ms-2"><i class="far fa-calendar-alt me-1"></i>${b.date}</span>
+                                </div>
+                                <div class="text-end">
+                                    <span class="fw-bold d-block">₹${b.amount}</span>
+                                    <span class="badge bg-light text-dark border">${b.status}</span>
+                                </div>
+                            </label>
+                        </div>`;
+                    });
+                } else {
+                    html = `
+                    <div class="text-center text-muted py-4">
+                        <i class="fas fa-search fs-2 mb-2 opacity-50"></i>
+                        <p class="mb-0 small">No bookings found for the selected criteria.</p>
+                    </div>`;
+                }
+                
+                document.getElementById('bookings-checkboxes').innerHTML = html;
+                updateCount();
+            })
+            .catch(err => {
+                document.getElementById('bookings-checkboxes').innerHTML = '<div class="alert alert-danger">Error loading bookings. Please try again.</div>';
+            });
+    }
+    
+    function updateCount() {
+        const count = document.querySelectorAll('input[name="bookings"]:checked').length;
+        document.getElementById('bookingCount').textContent = count + ' selected';
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="h3 mb-0 text-body fw-bold">Add New Booking</h2>
+    <a href="{% url 'booking_list' %}" class="btn btn-outline-secondary rounded-pill px-4">
+        <i class="fas fa-arrow-left me-2"></i>Back to List
+    </a>
+</div>
+
+<form method="post" enctype="multipart/form-data" class="needs-validation">
+    {% csrf_token %}
+    
+    <div class="row g-4">
+        <!-- General Info -->
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-transparent border-bottom pt-4 pb-3">
+                    <h5 class="fw-bold mb-0"><i class="fas fa-info-circle me-2 text-primary"></i>General Information</h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row g-3">
+                        <div class="col-md-6">{{ form.date|as_crispy_field }}</div>
+                        <div class="col-md-6">{{ form.customer_name|as_crispy_field }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Addresses -->
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-transparent border-bottom pt-4 pb-3">
+                    <h5 class="fw-bold mb-0"><i class="fas fa-map-marker-alt me-2 text-danger"></i>From Address</h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row g-3">
+                        <div class="col-sm-6">{{ form.from_address_name|as_crispy_field }}</div>
+                        <div class="col-sm-6">{{ form.from_address_phone|as_crispy_field }}</div>
+                        <div class="col-12">{{ form.from_address_address_line|as_crispy_field }}</div>
+                        <div class="col-12">{{ form.from_address_city|as_crispy_field }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-transparent border-bottom pt-4 pb-3">
+                    <h5 class="fw-bold mb-0"><i class="fas fa-map-marker-alt me-2 text-success"></i>To Address</h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row g-3">
+                        <div class="col-sm-6">{{ form.to_address_name|as_crispy_field }}</div>
+                        <div class="col-sm-6">{{ form.to_address_phone|as_crispy_field }}</div>
+                        <div class="col-12">{{ form.to_address_address_line|as_crispy_field }}</div>
+                        <div class="col-12">{{ form.to_address_city|as_crispy_field }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Parcel Details -->
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-transparent border-bottom pt-4 pb-3">
+                    <h5 class="fw-bold mb-0"><i class="fas fa-box-open me-2 text-warning"></i>Parcel Details & Billing</h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row g-4">
+                        <div class="col-md-4">{{ form.weight|as_crispy_field }}</div>
+                        <div class="col-md-4">{{ form.pieces|as_crispy_field }}</div>
+                        <div class="col-md-4">{{ form.tracking_id|as_crispy_field }}</div>
+                        
+                        <div class="col-md-4">{{ form.amount|as_crispy_field }}</div>
+                        <div class="col-md-4">{{ form.amount_type|as_crispy_field }}</div>
+                        <div class="col-md-4">{{ form.paid_amount|as_crispy_field }}</div>
+                        
+                        <div class="col-md-4">{{ form.account_type|as_crispy_field }}</div>
+                        <div class="col-md-4">{{ form.status|as_crispy_field }}</div>
+                        <div class="col-md-4">{{ form.image|as_crispy_field }}</div>
+                        
+                        <div class="col-md-6">{{ form.remark|as_crispy_field }}</div>
+                        <div class="col-md-6">{{ form.complaint|as_crispy_field }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-12 text-end mb-5">
+            <a href="{% url 'booking_list' %}" class="btn btn-light rounded-pill px-4 me-2">Cancel</a>
+            <button type="submit" class="btn btn-primary rounded-pill px-5 shadow-sm">
+                <i class="fas fa-save me-2"></i>Save Booking
+            </button>
+        </div>
+    </div>
+</form>
+{% endblock %}
