@@ -1,11 +1,13 @@
 import os
 from pathlib import Path
-from decouple import config
+from dotenv import load_dotenv
+
+load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = config('SECRET_KEY')  # Change in production
-DEBUG = config('DEBUG', default=False, cast=bool)
+SECRET_KEY = os.getenv('SECRET_KEY')  # Change in production
+DEBUG = os.getenv('DEBUG')
 ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [
@@ -64,8 +66,8 @@ DATABASES = {
 }
 
 # MongoDB connection for courier data
-MONGO_URI = config('MONGO_URI', default='mongodb://localhost:27017')
-MONGO_DB_NAME = config('MONGO_DB_NAME', default='courier_db')
+MONGO_URI = os.getenv('MONGO_URI')
+MONGO_DB_NAME = os.getenv('MONGO_DB_NAME')
 
 AUTH_PASSWORD_VALIDATORS = []
 
@@ -101,3 +103,5 @@ SOCIALACCOUNT_PROVIDERS = {
 
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 CRISPY_TEMPLATE_PACK = "bootstrap5"
+
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
