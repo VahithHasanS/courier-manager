@@ -61,7 +61,7 @@ WSGI_APPLICATION = 'courier_project.wsgi.application'
 
 DATABASES = {
     'default': dj_database_url.config(
-        default=os.getenv("courier_manager_DATABASE_URL") + str(BASE_DIR / 'db.sqlite3'),
+        default='sqlite:///' + str(BASE_DIR / 'db.sqlite3'),
         conn_max_age=600
     )
 }
