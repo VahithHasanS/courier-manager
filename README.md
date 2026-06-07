@@ -1,6 +1,6 @@
 # Courier Manager
 
-A full‑stack web application for courier branch managers to manage bookings, customers, expenses, invoices, head office reports, and more – all built with **Django** and **MongoDB**.
+A full‑stack web application for courier branch managers to manage bookings, customers, expenses, invoices, head office reports, and more – all built with **Django**, **PostgreSQL** and **MongoDB**.
 
 ## Features
 
