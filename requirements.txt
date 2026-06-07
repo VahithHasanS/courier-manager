@@ -25,3 +25,5 @@ six==1.17.0
 sqlparse==0.5.5
 urllib3==2.7.0
 python-dotenv==1.0.0
+dj-database-url
+psycopg2-binary
